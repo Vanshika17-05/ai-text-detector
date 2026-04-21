@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Text Detector — ML Classification System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root {
+  --bg: #0a0b0f;
+  --bg2: #111318;
+  --bg3: #191c24;
+  --bg4: #1f2330;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --text: #f0f2f8;
+  --text2: #8b92a8;
+  --text3: #4a5068;
+  --accent: #6ee7b7;
+  --accent2: #3b82f6;
+  --accent3: #a78bfa;
+  --danger: #f87171;
+  --warn: #fbbf24;
+  --success: #34d399;
+  --font-display: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+  --radius: 14px;
+  --radius-sm: 8px;
+  --radius-lg: 20px;
+  --transition: 0.2s cubic-bezier(0.4,0,0.2,1);
+}
+.light {
+  --bg: #f4f5f9;
+  --bg2: #ffffff;
+  --bg3: #eef0f6;
+  --bg4: #e4e7f0;
+  --border: rgba(0,0,0,0.07);
+  --border2: rgba(0,0,0,0.12);
+  --text: #0f1117;
+  --text2: #5a6178;
+  --text3: #9ca3af;
+  --accent: #059669;
+  --accent2: #2563eb;
+  --accent3: #7c3aed;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.6;
+  min-height: 100vh;
+  transition: background var(--transition), color var(--transition);
+  overflow-x: hidden;
+}
+::selection { background: rgba(110,231,183,0.25); }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
+
+/* LAYOUT */
+.site-wrap { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+/* HEADER */
+.header {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(10,11,15,0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  transition: background var(--transition);
+}
+.light .header { background: rgba(244,245,249,0.85); }
+.header-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  height: 64px; gap: 16px;
+}
+.brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+.brand-icon {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, #6ee7b7, #3b82f6);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; flex-shrink: 0;
+}
+.brand-text { font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--text); }
+.brand-sub { font-size: 10px; color: var(--text2); font-family: var(--font-mono); letter-spacing: .5px; }
+
+.main-nav { display: flex; gap: 2px; }
+.nav-btn {
+  padding: 6px 14px; border: none; background: transparent;
+  color: var(--text2); font-family: var(--font-body); font-size: 13px;
+  border-radius: var(--radius-sm); cursor: pointer;
+  transition: all var(--transition); white-space: nowrap;
+}
+.nav-btn:hover { color: var(--text); background: var(--bg3); }
+.nav-btn.active { color: var(--bg); background: var(--accent); }
+.light .nav-btn.active { color: #fff; }
+
+.header-actions { display: flex; align-items: center; gap: 8px; }
+.theme-toggle {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--bg3); border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 15px; transition: all var(--transition);
+}
+.theme-toggle:hover { background: var(--bg4); transform: rotate(20deg); }
+
+/* HERO */
+.hero {
+  padding: 72px 0 48px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(110,231,183,0.08), transparent);
+  pointer-events: none;
+}
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 14px; border-radius: 20px;
+  background: rgba(110,231,183,0.1); border: 1px solid rgba(110,231,183,0.25);
+  color: var(--accent); font-size: 11px; font-family: var(--font-mono);
+  letter-spacing: 1px; text-transform: uppercase; margin-bottom: 20px;
+}
+.hero-badge::before { content: '●'; font-size: 7px; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.3; } }
+.hero h1 {
+  font-family: var(--font-display); font-size: clamp(32px,6vw,64px);
+  font-weight: 800; line-height: 1.1; letter-spacing: -1px;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, var(--text) 60%, var(--accent));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero p {
+  font-size: 17px; color: var(--text2); max-width: 520px; margin: 0 auto 32px;
+  font-weight: 300;
+}
+.hero-cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 11px 24px; border-radius: var(--radius-sm); border: none;
+  font-family: var(--font-body); font-size: 14px; font-weight: 500;
+  cursor: pointer; transition: all var(--transition); text-decoration: none;
+}
+.btn-primary { background: var(--accent); color: #0a0b0f; }
+.btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(110,231,183,0.25); }
+.light .btn-primary { color: #fff; }
+.btn-ghost {
+  background: transparent; color: var(--text2);
+  border: 1px solid var(--border2);
+}
+.btn-ghost:hover { background: var(--bg3); color: var(--text); }
+
+/* PAGES */
+.page { display: none; padding: 32px 0 64px; animation: fadeUp .3s ease; }
+.page.active { display: block; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+
+/* STAT GRID */
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 14px; margin-bottom: 28px; }
+.stat-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px;
+  transition: border-color var(--transition), background var(--transition);
+  position: relative; overflow: hidden;
+}
+.stat-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0; transition: opacity var(--transition);
+}
+.stat-card:hover::before { opacity: 1; }
+.stat-card:hover { border-color: var(--border2); }
+.stat-label { font-size: 11px; color: var(--text3); font-family: var(--font-mono); letter-spacing: .5px; text-transform: uppercase; margin-bottom: 8px; }
+.stat-value { font-family: var(--font-display); font-size: 32px; font-weight: 700; color: var(--text); line-height: 1; }
+.stat-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
+.stat-card.featured { border-color: rgba(110,231,183,0.2); }
+.stat-card.featured .stat-value { color: var(--accent); }
+
+/* CHART ROW */
+.chart-row { display: grid; grid-template-columns: 1fr 1.6fr; gap: 16px; margin-bottom: 28px; }
+@media(max-width:700px){ .chart-row { grid-template-columns: 1fr; } }
+
+/* CARDS */
+.card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px;
+  transition: background var(--transition);
+}
+.card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.card-title { font-family: var(--font-display); font-size: 14px; font-weight: 600; color: var(--text); }
+.card-badge {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: .5px;
+  padding: 3px 10px; border-radius: 20px; text-transform: uppercase;
+}
+.badge-green { background: rgba(52,211,153,0.12); color: var(--success); border: 1px solid rgba(52,211,153,0.2); }
+.badge-blue { background: rgba(59,130,246,0.12); color: var(--accent2); border: 1px solid rgba(59,130,246,0.2); }
+.badge-purple { background: rgba(167,139,250,0.12); color: var(--accent3); border: 1px solid rgba(167,139,250,0.2); }
+
+/* ANALYZE PAGE */
+.analyze-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media(max-width:800px){ .analyze-layout { grid-template-columns: 1fr; } }
+.textarea-wrap {
+  position: relative;
+}
+textarea {
+  width: 100%; min-height: 200px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 14px;
+  color: var(--text); font-family: var(--font-body); font-size: 14px;
+  resize: vertical; outline: none; line-height: 1.7;
+  transition: border-color var(--transition);
+}
+textarea:focus { border-color: rgba(110,231,183,0.4); }
+textarea::placeholder { color: var(--text3); }
+.textarea-meta {
+  position: absolute; bottom: 10px; right: 12px;
+  font-family: var(--font-mono); font-size: 10px; color: var(--text3);
+  pointer-events: none;
+}
+.btn-row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.btn-sm { padding: 8px 18px; font-size: 13px; border-radius: var(--radius-sm); }
+.btn-analyze {
+  background: linear-gradient(135deg, var(--accent), #3b82f6);
+  color: #0a0b0f; font-weight: 600;
+}
+.light .btn-analyze { color: #fff; }
+.btn-analyze:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.btn-clear { background: var(--bg3); border: 1px solid var(--border2); color: var(--text2); }
+.btn-clear:hover { background: var(--bg4); color: var(--text); }
+.btn-sample { background: transparent; border: 1px solid rgba(167,139,250,0.3); color: var(--accent3); }
+.btn-sample:hover { background: rgba(167,139,250,0.1); }
+
+/* LOADER */
+.loader-wrap { text-align: center; padding: 40px 20px; display: none; }
+.loader-wrap.show { display: block; }
+.spinner-ring {
+  width: 48px; height: 48px; margin: 0 auto 16px;
+  border: 2px solid var(--border2);
+  border-top-color: var(--accent);
+  border-radius: 50%; animation: spin .9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loader-text { font-family: var(--font-mono); font-size: 12px; color: var(--text2); }
+.loader-dots::after {
+  content: ''; animation: dots 1.5s infinite;
+}
+@keyframes dots {
+  0% { content: '.'; } 33% { content: '..'; } 66% { content: '...'; }
+}
+
+/* RESULT */
+.result-panel { display: none; }
+.result-panel.show { display: block; animation: fadeUp .4s ease; }
+.verdict-bar {
+  display: flex; align-items: center; gap: 14px; padding: 16px;
+  background: var(--bg3); border-radius: var(--radius-sm);
+  margin-bottom: 16px; flex-wrap: wrap; gap: 10px;
+}
+.verdict-pill {
+  padding: 6px 18px; border-radius: 20px;
+  font-family: var(--font-display); font-size: 15px; font-weight: 700;
+  letter-spacing: .3px;
+}
+.verdict-pill.ai {
+  background: rgba(248,113,113,0.12); color: var(--danger);
+  border: 1px solid rgba(248,113,113,0.25);
+}
+.verdict-pill.human {
+  background: rgba(52,211,153,0.12); color: var(--success);
+  border: 1px solid rgba(52,211,153,0.25);
+}
+.verdict-detail { font-size: 13px; color: var(--text2); flex: 1; }
+.metrics-trio { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 16px; }
+.metric-box {
+  background: var(--bg3); border-radius: var(--radius-sm);
+  padding: 14px; text-align: center;
+}
+.metric-num {
+  font-family: var(--font-display); font-size: 26px; font-weight: 700;
+  color: var(--text); line-height: 1;
+}
+.metric-lbl { font-size: 10px; color: var(--text3); font-family: var(--font-mono); margin-top: 4px; text-transform: uppercase; letter-spacing: .5px; }
+.prog-group { display: flex; flex-direction: column; gap: 10px; }
+.prog-item {}
+.prog-head { display: flex; justify-content: space-between; margin-bottom: 5px; }
+.prog-label { font-size: 12px; color: var(--text2); font-family: var(--font-mono); }
+.prog-val { font-size: 12px; color: var(--text2); font-family: var(--font-mono); font-weight: 500; }
+.prog-track {
+  height: 6px; background: var(--bg4); border-radius: 3px; overflow: hidden;
+}
+.prog-bar {
+  height: 100%; border-radius: 3px;
+  transition: width 1.2s cubic-bezier(0.4,0,0.2,1);
+}
+.bar-ai { background: linear-gradient(90deg, #f87171, #fb923c); }
+.bar-human { background: linear-gradient(90deg, #34d399, #06b6d4); }
+.bar-conf { background: linear-gradient(90deg, #a78bfa, #6366f1); }
+
+/* FEATURE PAGE */
+.feat-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); gap: 14px; margin-bottom: 24px; }
+.feat-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px;
+  transition: all var(--transition);
+}
+.feat-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+.feat-icon { font-size: 20px; margin-bottom: 10px; }
+.feat-card-title { font-size: 11px; color: var(--text3); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
+.feat-num { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--text); line-height: 1; }
+.feat-unit { font-size: 11px; color: var(--text3); margin-top: 3px; }
+.feat-charts-row { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; }
+@media(max-width:700px){ .feat-charts-row { grid-template-columns: 1fr; } }
+.ling-row { display: flex; flex-direction: column; gap: 12px; }
+.ling-item { display: flex; flex-direction: column; gap: 4px; }
+.ling-head { display: flex; justify-content: space-between; }
+.ling-name { font-size: 12px; color: var(--text2); }
+.ling-pct { font-size: 12px; color: var(--text); font-weight: 500; font-family: var(--font-mono); }
+.ling-track { height: 5px; background: var(--bg4); border-radius: 3px; overflow: hidden; }
+.ling-fill { height: 100%; border-radius: 3px; transition: width .9s ease; }
+
+/* HISTORY */
+.hist-controls { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+.hist-count { font-family: var(--font-mono); font-size: 12px; color: var(--text3); }
+.history-list { display: flex; flex-direction: column; gap: 10px; }
+.hist-item {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px;
+  display: grid; grid-template-columns: auto 1fr auto auto auto;
+  align-items: center; gap: 12px;
+  transition: all var(--transition); cursor: default;
+  animation: fadeUp .3s ease;
+}
+.hist-item:hover { border-color: var(--border2); }
+.hist-num { font-family: var(--font-mono); font-size: 11px; color: var(--text3); min-width: 22px; }
+.hist-text { font-size: 13px; color: var(--text2); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.hist-badge {
+  padding: 3px 12px; border-radius: 12px;
+  font-size: 11px; font-family: var(--font-mono); font-weight: 500;
+  white-space: nowrap;
+}
+.hist-badge.ai { background: rgba(248,113,113,0.1); color: var(--danger); border: 1px solid rgba(248,113,113,0.2); }
+.hist-badge.human { background: rgba(52,211,153,0.1); color: var(--success); border: 1px solid rgba(52,211,153,0.2); }
+.hist-prob { font-family: var(--font-mono); font-size: 13px; font-weight: 500; color: var(--text); white-space: nowrap; }
+.hist-time { font-family: var(--font-mono); font-size: 11px; color: var(--text3); white-space: nowrap; }
+@media(max-width:600px){
+  .hist-item { grid-template-columns: 1fr auto; }
+  .hist-num, .hist-time { display: none; }
+}
+.empty-state {
+  text-align: center; padding: 60px 20px;
+  color: var(--text3); font-size: 14px;
+}
+.empty-icon { font-size: 40px; margin-bottom: 12px; opacity: .4; }
+
+/* SETTINGS */
+.settings-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media(max-width:700px){ .settings-layout { grid-template-columns: 1fr; } }
+.setting-group { display: flex; flex-direction: column; gap: 2px; }
+.setting-group-title { font-family: var(--font-display); font-size: 13px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+.setting-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 0; border-bottom: 1px solid var(--border);
+}
+.setting-row:last-child { border-bottom: none; }
+.setting-info p { font-size: 14px; color: var(--text); }
+.setting-info span { font-size: 12px; color: var(--text3); }
+.toggle { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; inset: 0; background: var(--bg4);
+  border: 1px solid var(--border2); border-radius: 12px;
+  cursor: pointer; transition: all var(--transition);
+}
+.toggle-slider:before {
+  content: ''; position: absolute;
+  width: 18px; height: 18px; left: 2px; top: 2px;
+  background: var(--text2); border-radius: 50%; transition: all var(--transition);
+}
+.toggle input:checked + .toggle-slider { background: var(--accent); border-color: transparent; }
+.toggle input:checked + .toggle-slider:before { transform: translateX(20px); background: #0a0b0f; }
+.light .toggle input:checked + .toggle-slider:before { background: #fff; }
+select, .custom-select {
+  background: var(--bg3); border: 1px solid var(--border2);
+  border-radius: var(--radius-sm); color: var(--text);
+  padding: 7px 12px; font-size: 13px; font-family: var(--font-body);
+  cursor: pointer; outline: none; transition: border-color var(--transition);
+  appearance: none;
+}
+select:focus { border-color: rgba(110,231,183,0.4); }
+
+/* PAGE TITLE */
+.page-title-wrap { margin-bottom: 28px; }
+.page-title {
+  font-family: var(--font-display); font-size: 26px; font-weight: 800;
+  color: var(--text); margin-bottom: 4px;
+}
+.page-subtitle { font-size: 14px; color: var(--text2); }
+
+/* FOOTER */
+footer {
+  border-top: 1px solid var(--border); padding: 24px 0;
+  text-align: center; color: var(--text3); font-size: 12px;
+  font-family: var(--font-mono);
+}
+footer span { color: var(--accent); }
+
+/* RESPONSIVE */
+@media(max-width:600px){
+  .main-nav { display: none; }
+  .hero { padding: 48px 0 32px; }
+  .metrics-trio { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="site-wrap">
+    <div class="header-inner">
+      <a class="brand" href="#" onclick="return false">
+        <div class="brand-icon">⚡</div>
+        <div>
+          <div class="brand-text">AI Text Detector</div>
+          <div class="brand-sub">ML Classification System</div>
+        </div>
+      </a>
+      <nav class="main-nav" id="mainNav">
+        <button class="nav-btn active" onclick="showPage('dashboard',this)">Dashboard</button>
+        <button class="nav-btn" onclick="showPage('analyze',this)">Analyze</button>
+        <button class="nav-btn" onclick="showPage('features',this)">Features</button>
+        <button class="nav-btn" onclick="showPage('history',this)">History</button>
+        <button class="nav-btn" onclick="showPage('settings',this)">Settings</button>
+      </nav>
+      <div class="header-actions">
+        <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main>
+  <div class="site-wrap">
+
+    <!-- HERO -->
+    <div id="hero-section" class="hero">
+      <div class="hero-badge">ML Engine Active</div>
+      <h1>Detect AI-Generated Text<br>with Precision</h1>
+      <p>Machine learning classification system that identifies whether text was written by a human or generated by an AI model.</p>
+      <div class="hero-cta">
+        <button class="btn btn-primary" onclick="showPage('analyze', document.querySelectorAll('.nav-btn')[1])">
+          Start Analyzing →
+        </button>
+        <button class="btn btn-ghost" onclick="showPage('dashboard', document.querySelectorAll('.nav-btn')[0])">
+          View Dashboard
+        </button>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="page-dashboard" class="page">
+      <div class="page-title-wrap">
+        <div class="page-title">Dashboard</div>
+        <div class="page-subtitle">Overview of all classification activity</div>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-card featured">
+          <div class="stat-label">Total Analyses</div>
+          <div class="stat-value" id="s-total">0</div>
+          <div class="stat-sub">all time</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">AI Detected</div>
+          <div class="stat-value" id="s-ai">—</div>
+          <div class="stat-sub">of total</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Human Written</div>
+          <div class="stat-value" id="s-human">—</div>
+          <div class="stat-sub">of total</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Avg Confidence</div>
+          <div class="stat-value" id="s-conf">—</div>
+          <div class="stat-sub">detection accuracy</div>
+        </div>
+      </div>
+      <div class="chart-row">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Distribution</div>
+            <span class="card-badge badge-green">Live</span>
+          </div>
+          <div style="position:relative;height:200px">
+            <canvas id="pieChart" role="img" aria-label="Pie chart showing AI vs Human distribution">No data yet</canvas>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Confidence over sessions</div>
+            <span class="card-badge badge-blue">Trend</span>
+          </div>
+          <div style="position:relative;height:200px">
+            <canvas id="lineChart" role="img" aria-label="Line chart showing confidence scores over sessions">No data yet</canvas>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Quick Analysis</div>
+          <span class="card-badge badge-purple">Fast Mode</span>
+        </div>
+        <div class="textarea-wrap">
+          <textarea id="quick-input" rows="4" placeholder="Paste any text here for instant AI/Human classification..."></textarea>
+          <div class="textarea-meta" id="quick-counter">0 words</div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-sm btn-analyze" onclick="runAnalysis('quick-input', true)">⚡ Quick Analyze</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANALYZE -->
+    <div id="page-analyze" class="page">
+      <div class="page-title-wrap">
+        <div class="page-title">Text Analysis</div>
+        <div class="page-subtitle">Deep classification with full probability breakdown</div>
+      </div>
+      <div class="analyze-layout">
+        <div>
+          <div class="card" style="height:fit-content">
+            <div class="card-header">
+              <div class="card-title">Input Text</div>
+              <span class="card-badge badge-purple">Classifier</span>
+            </div>
+            <div class="textarea-wrap">
+              <textarea id="main-input" rows="10" placeholder="Paste or type text to analyze...&#10;&#10;Minimum 30 characters for accurate results."></textarea>
+              <div class="textarea-meta" id="main-counter">0 words</div>
+            </div>
+            <div class="btn-row" style="margin-top:14px">
+              <button class="btn btn-sm btn-analyze" onclick="runAnalysis('main-input', false)">🔍 Analyze</button>
+              <button class="btn btn-sm btn-clear" onclick="clearMain()">Clear</button>
+              <button class="btn btn-sm btn-sample" onclick="loadSample()">Load Sample ↗</button>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <!-- LOADER -->
+          <div class="loader-wrap card" id="loader">
+            <div class="spinner-ring"></div>
+            <div class="loader-text">Analyzing linguistic patterns<span class="loader-dots"></span></div>
+            <div style="font-size:11px;color:var(--text3);margin-top:8px;font-family:var(--font-mono)">Running ML classification engine</div>
+          </div>
+
+          <!-- RESULT -->
+          <div class="result-panel card" id="result-panel">
+            <div class="card-header">
+              <div class="card-title">Classification Result</div>
+              <span class="card-badge badge-green" id="r-timestamp">—</span>
+            </div>
+            <div class="verdict-bar">
+              <div class="verdict-pill" id="verdict-pill">AI Generated</div>
+              <div class="verdict-detail" id="verdict-detail">Detected with high confidence</div>
+            </div>
+            <div class="metrics-trio">
+              <div class="metric-box">
+                <div class="metric-num" id="r-ai">—</div>
+                <div class="metric-lbl">AI Prob.</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-num" id="r-human">—</div>
+                <div class="metric-lbl">Human Prob.</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-num" id="r-conf">—</div>
+                <div class="metric-lbl">Confidence</div>
+              </div>
+            </div>
+            <div class="prog-group">
+              <div class="prog-item">
+                <div class="prog-head">
+                  <span class="prog-label">AI Probability</span>
+                  <span class="prog-val" id="pv-ai">0%</span>
+                </div>
+                <div class="prog-track"><div class="prog-bar bar-ai" id="pb-ai" style="width:0%"></div></div>
+              </div>
+              <div class="prog-item">
+                <div class="prog-head">
+                  <span class="prog-label">Human Probability</span>
+                  <span class="prog-val" id="pv-human">0%</span>
+                </div>
+                <div class="prog-track"><div class="prog-bar bar-human" id="pb-human" style="width:0%"></div></div>
+              </div>
+              <div class="prog-item">
+                <div class="prog-head">
+                  <span class="prog-label">Confidence Score</span>
+                  <span class="prog-val" id="pv-conf">0%</span>
+                </div>
+                <div class="prog-track"><div class="prog-bar bar-conf" id="pb-conf" style="width:0%"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- DEFAULT state -->
+          <div class="card" id="result-placeholder" style="text-align:center;padding:40px 20px">
+            <div style="font-size:36px;margin-bottom:12px;opacity:0.3">🔬</div>
+            <div style="color:var(--text3);font-size:13px">Results will appear here after analysis</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FEATURES -->
+    <div id="page-features" class="page">
+      <div class="page-title-wrap">
+        <div class="page-title">Feature Analysis</div>
+        <div class="page-subtitle">Linguistic and stylometric breakdown</div>
+      </div>
+      <div id="feat-empty" class="empty-state">
+        <div class="empty-icon">📊</div>
+        Run an analysis first to view feature breakdown
+      </div>
+      <div id="feat-data" style="display:none">
+        <div class="feat-grid">
+          <div class="feat-card">
+            <div class="feat-icon">📏</div>
+            <div class="feat-card-title">Avg Sentence Length</div>
+            <div class="feat-num" id="f-sentlen">—</div>
+            <div class="feat-unit">words per sentence</div>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">📚</div>
+            <div class="feat-card-title">Vocabulary Richness</div>
+            <div class="feat-num" id="f-vocab">—</div>
+            <div class="feat-unit">type-token ratio %</div>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">🔤</div>
+            <div class="feat-card-title">Unique Words</div>
+            <div class="feat-num" id="f-unique">—</div>
+            <div class="feat-unit">distinct tokens</div>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">🔢</div>
+            <div class="feat-card-title">Total Words</div>
+            <div class="feat-num" id="f-words">—</div>
+            <div class="feat-unit">in text</div>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">✍️</div>
+            <div class="feat-card-title">Avg Word Length</div>
+            <div class="feat-num" id="f-wordlen">—</div>
+            <div class="feat-unit">characters</div>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">📝</div>
+            <div class="feat-card-title">Sentences</div>
+            <div class="feat-num" id="f-sents">—</div>
+            <div class="feat-unit">detected</div>
+          </div>
+        </div>
+        <div class="feat-charts-row">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Top word frequencies</div>
+              <span class="card-badge badge-blue">Top 6</span>
+            </div>
+            <div style="position:relative;height:230px">
+              <canvas id="wfChart" role="img" aria-label="Bar chart of top word frequencies">Word frequency data</canvas>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Linguistic profile</div>
+              <span class="card-badge badge-purple">Metrics</span>
+            </div>
+            <div class="ling-row" id="ling-rows" style="margin-top:4px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div id="page-history" class="page">
+      <div class="hist-controls">
+        <div>
+          <div class="page-title">History</div>
+          <div class="page-subtitle">Previous classification results</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span class="hist-count" id="hist-count">0 records</span>
+          <button class="btn btn-sm btn-clear" onclick="clearHistory()" style="font-size:12px">Clear All</button>
+        </div>
+      </div>
+      <div class="history-list" id="history-list">
+        <div class="empty-state">
+          <div class="empty-icon">📋</div>
+          No analyses yet. Head to Analyze to get started.
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="page-settings" class="page">
+      <div class="page-title-wrap">
+        <div class="page-title">Settings</div>
+        <div class="page-subtitle">Customize your experience</div>
+      </div>
+      <div class="settings-layout">
+        <div class="card">
+          <div class="setting-group-title">Appearance</div>
+          <div class="setting-group">
+            <div class="setting-row">
+              <div class="setting-info"><p>Dark Mode</p><span>Toggle light / dark interface</span></div>
+              <label class="toggle"><input type="checkbox" id="dark-toggle" onchange="syncThemeToggle()"><div class="toggle-slider"></div></label>
+            </div>
+            <div class="setting-row">
+              <div class="setting-info"><p>Compact View</p><span>Reduce spacing in lists</span></div>
+              <label class="toggle"><input type="checkbox" id="compact-toggle"><div class="toggle-slider"></div></label>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="setting-group-title">Classification</div>
+          <div class="setting-group">
+            <div class="setting-row">
+              <div class="setting-info"><p>Detection Sensitivity</p><span>Threshold for AI classification</span></div>
+              <select id="sensitivity" onchange="savePref('sensitivity',this.value)">
+                <option value="60">Low — 60%</option>
+                <option value="70" selected>Medium — 70%</option>
+                <option value="80">High — 80%</option>
+              </select>
+            </div>
+            <div class="setting-row">
+              <div class="setting-info"><p>Auto-save History</p><span>Store results in session</span></div>
+              <label class="toggle"><input type="checkbox" id="autosave-toggle" checked><div class="toggle-slider"></div></label>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="setting-group-title">About</div>
+          <div class="setting-group">
+            <div class="setting-row">
+              <div class="setting-info"><p>Version</p><span>Current release</span></div>
+              <span style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">v2.1.0</span>
+            </div>
+            <div class="setting-row">
+              <div class="setting-info"><p>ML Engine</p><span>Classification model</span></div>
+              <span style="font-family:var(--font-mono);font-size:12px;color:var(--text3)">v3 · Local</span>
+            </div>
+            <div class="setting-row">
+              <div class="setting-info"><p>Analyses This Session</p><span>Since page load</span></div>
+              <span style="font-family:var(--font-mono);font-size:12px;color:var(--text2)" id="session-count">0</span>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="setting-group-title">Data</div>
+          <div class="setting-group">
+            <div class="setting-row">
+              <div class="setting-info"><p>Clear All History</p><span>Remove stored results</span></div>
+              <button class="btn btn-sm btn-clear" onclick="clearHistory()" style="font-size:12px">Clear</button>
+            </div>
+            <div class="setting-row">
+              <div class="setting-info"><p>Export Results</p><span>Download as JSON</span></div>
+              <button class="btn btn-sm btn-sample" onclick="exportHistory()" style="font-size:12px">Export</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<footer>
+  <div class="site-wrap">
+    <span>AI Text Detector</span> · ML Classification System · Built with ⚡ &amp; JavaScript
+  </div>
+</footer>
+
+<script>
+/* -------- STATE -------- */
+let isDark = true;
+let history = [];
+let stats = { total: 0, ai: 0, human: 0, confSum: 0 };
+let pieChart = null, lineChart = null, wfChart = null;
+let lastResult = null;
+const confidenceHistory = [];
+const SAMPLES = [
+  "The mitochondria is the powerhouse of the cell, responsible for producing ATP through cellular respiration. This complex process involves multiple enzymatic reactions that occur within the inner mitochondrial membrane, ultimately converting glucose and oxygen into usable energy. Without this organelle, eukaryotic cells would be unable to sustain aerobic metabolism efficiently, leading to cellular death.",
+  "honestly idk why i agreed to do this presentation lol. i stayed up till 3am making slides and now im exhausted. my friend keeps saying it'll be fine but i really don't believe them?? anyway at least there's coffee. wish me luck i guess",
+  "In conclusion, the integration of artificial intelligence into modern healthcare systems presents both unprecedented opportunities and significant ethical challenges that must be carefully navigated. The implementation of machine learning algorithms in diagnostic workflows has demonstrated remarkable accuracy in detecting various medical conditions, often surpassing traditional methods. However, the potential for algorithmic bias and the critical importance of maintaining physician oversight cannot be understated."
+];
+let sampleIdx = 0;
+
+/* -------- NAVIGATION -------- */
+function showPage(id, btn) {
+  document.getElementById('hero-section').style.display = 'none';
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+/* -------- THEME -------- */
+function toggleTheme() {
+  isDark = !isDark;
+  document.body.classList.toggle('light', !isDark);
+  document.getElementById('themeBtn').textContent = isDark ? '🌙' : '☀️';
+  document.getElementById('dark-toggle').checked = isDark;
+  savePref('theme', isDark ? 'dark' : 'light');
+  rebuildCharts();
+}
+function syncThemeToggle() {
+  const checked = document.getElementById('dark-toggle').checked;
+  if (checked !== isDark) toggleTheme();
+}
+function savePref(k, v) { try { localStorage.setItem('aitd_' + k, v); } catch(e) {} }
+function loadPrefs() {
+  try {
+    const t = localStorage.getItem('aitd_theme');
+    if (t === 'light' && isDark) toggleTheme();
+    const s = localStorage.getItem('aitd_sensitivity');
+    if (s) document.getElementById('sensitivity').value = s;
+  } catch(e) {}
+}
+
+/* -------- WORD COUNT -------- */
+function countWords(text) { return text.trim() ? text.trim().split(/\s+/).length : 0; }
+document.getElementById('quick-input').addEventListener('input', function() {
+  document.getElementById('quick-counter').textContent = countWords(this.value) + ' words';
+});
+document.getElementById('main-input').addEventListener('input', function() {
+  document.getElementById('main-counter').textContent = countWords(this.value) + ' words';
+});
+
+/* -------- ANALYSIS ENGINE -------- */
+function analyzeText(text) {
+  const words = text.trim().split(/\s+/).filter(w => w.length > 0);
+  const wCount = words.length;
+  const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+  const avgSentLen = sentences.length ? (wCount / sentences.length) : wCount;
+  const cleanWords = words.map(w => w.toLowerCase().replace(/[^a-z]/g, '')).filter(w => w.length > 0);
+  const unique = new Set(cleanWords).size;
+  const ttr = wCount ? (unique / wCount) : 0;
+  const avgWordLen = words.reduce((s, w) => s + w.replace(/[^a-z]/gi,'').length, 0) / Math.max(wCount, 1);
+  const formalWords = ['therefore','however','furthermore','consequently','thus','moreover','nevertheless','additionally','substantially','significantly','notably','particularly','predominantly','essentially','effectively','comprehensively','systematically','demonstrates','indicates','suggests'];
+  const formalCount = formalWords.filter(w => text.toLowerCase().includes(w)).length;
+  const contractions = (text.match(/\b(i'm|i'll|don't|can't|won't|i've|it's|that's|you're|we're|didn't|doesn't|isn't|wasn't|weren't|haven't|hadn't|shouldn't|wouldn't|couldn't|i'd|you'd|he'd|she'd|we'd|they'd|lol|btw|tbh|omg|ngl|idk|imo|afaik|smh|wtf|brb)\b/gi) || []).length;
+  const exclamations = (text.match(/!/g) || []).length;
+  const questions = (text.match(/\?/g) || []).length;
+  const ellipsis = (text.match(/\.\.\./g) || []).length;
+  let aiScore = 50;
+  if (avgSentLen > 18) aiScore += 18; else if (avgSentLen > 14) aiScore += 8; else aiScore -= 12;
+  if (ttr < 0.55) aiScore += 14; else if (ttr < 0.7) aiScore += 4; else aiScore -= 12;
+  aiScore += Math.min(formalCount * 7, 24);
+  if (avgWordLen > 5.8) aiScore += 10; else if (avgWordLen > 5.0) aiScore += 4;
+  aiScore -= Math.min(contractions * 6, 20);
+  aiScore -= Math.min(exclamations * 5, 15);
+  aiScore -= ellipsis * 4;
+  if (questions > 2) aiScore -= 6;
+  const sensitivity = parseInt(document.getElementById('sensitivity').value) || 70;
+  aiScore = Math.max(5, Math.min(95, Math.round(aiScore)));
+  const isAI = aiScore >= sensitivity;
+  const conf = Math.min(97, Math.round(Math.abs(aiScore - 50) * 1.6 + 54));
+  const wordFreq = {};
+  cleanWords.forEach(w => { if (w.length > 3) wordFreq[w] = (wordFreq[w] || 0) + 1; });
+  const topWords = Object.entries(wordFreq).sort((a,b) => b[1]-a[1]).slice(0, 6);
+  return {
+    isAI, aiScore, humanScore: 100 - aiScore, conf,
+    avgSentLen: avgSentLen.toFixed(1), ttr: (ttr * 100).toFixed(1),
+    unique, wCount, avgWordLen: avgWordLen.toFixed(1),
+    sentences: sentences.length, topWords
+  };
+}
+
+/* -------- RUN ANALYSIS -------- */
+function runAnalysis(inputId, redirectToAnalyze) {
+  const text = document.getElementById(inputId).value.trim();
+  if (text.length < 30) { alert('Please enter at least 30 characters for analysis.'); return; }
+  if (redirectToAnalyze) {
+    document.getElementById('main-input').value = text;
+    document.getElementById('main-counter').textContent = countWords(text) + ' words';
+    showPage('analyze', document.querySelectorAll('.nav-btn')[1]);
+  }
+  const loader = document.getElementById('loader');
+  const panel = document.getElementById('result-panel');
+  const placeholder = document.getElementById('result-placeholder');
+  loader.classList.add('show');
+  panel.style.display = 'none';
+  placeholder.style.display = 'none';
+  setTimeout(() => {
+    const r = analyzeText(text);
+    lastResult = r;
+    loader.classList.remove('show');
+    showResult(r);
+    updateFeatures(r);
+    addHistory(text, r);
+    updateStats(r);
+  }, 1400);
+}
+
+function clearMain() {
+  document.getElementById('main-input').value = '';
+  document.getElementById('main-counter').textContent = '0 words';
+  document.getElementById('result-panel').style.display = 'none';
+  document.getElementById('result-placeholder').style.display = 'block';
+}
+
+function loadSample() {
+  const text = SAMPLES[sampleIdx % SAMPLES.length];
+  document.getElementById('main-input').value = text;
+  document.getElementById('main-counter').textContent = countWords(text) + ' words';
+  sampleIdx++;
+}
+
+/* -------- SHOW RESULT -------- */
+function showResult(r) {
+  const panel = document.getElementById('result-panel');
+  panel.style.display = 'block';
+  const pill = document.getElementById('verdict-pill');
+  pill.textContent = r.isAI ? 'AI Generated' : 'Human Written';
+  pill.className = 'verdict-pill ' + (r.isAI ? 'ai' : 'human');
+  document.getElementById('verdict-detail').textContent = `Detected with ${r.conf}% confidence — ${r.wCount} words analyzed`;
+  document.getElementById('r-ai').textContent = r.aiScore + '%';
+  document.getElementById('r-human').textContent = r.humanScore + '%';
+  document.getElementById('r-conf').textContent = r.conf + '%';
+  document.getElementById('r-timestamp').textContent = new Date().toLocaleTimeString();
+  setTimeout(() => {
+    setBar('pb-ai', 'pv-ai', r.aiScore);
+    setBar('pb-human', 'pv-human', r.humanScore);
+    setBar('pb-conf', 'pv-conf', r.conf);
+  }, 80);
+}
+function setBar(barId, valId, pct) {
+  document.getElementById(barId).style.width = pct + '%';
+  document.getElementById(valId).textContent = pct + '%';
+}
+
+/* -------- FEATURES -------- */
+function updateFeatures(r) {
+  document.getElementById('feat-empty').style.display = 'none';
+  document.getElementById('feat-data').style.display = 'block';
+  document.getElementById('f-sentlen').textContent = r.avgSentLen;
+  document.getElementById('f-vocab').textContent = r.ttr + '%';
+  document.getElementById('f-unique').textContent = r.unique;
+  document.getElementById('f-words').textContent = r.wCount;
+  document.getElementById('f-wordlen').textContent = r.avgWordLen;
+  document.getElementById('f-sents').textContent = r.sentences;
+  const lingData = [
+    { label: 'Formal language', val: Math.min(100, r.aiScore), color: '#a78bfa' },
+    { label: 'Sentence complexity', val: Math.min(100, Math.round(parseFloat(r.avgSentLen) * 3.5)), color: '#6366f1' },
+    { label: 'Vocabulary diversity', val: Math.round(parseFloat(r.ttr)), color: '#06b6d4' },
+    { label: 'Human patterns', val: r.humanScore, color: '#34d399' },
+    { label: 'Word sophistication', val: Math.min(100, Math.round(parseFloat(r.avgWordLen) * 12)), color: '#f59e0b' },
+  ];
+  document.getElementById('ling-rows').innerHTML = lingData.map(l => `
+    <div class="ling-item">
+      <div class="ling-head">
+        <span class="ling-name">${l.label}</span>
+        <span class="ling-pct">${l.val}%</span>
+      </div>
+      <div class="ling-track">
+        <div class="ling-fill" style="width:${l.val}%;background:${l.color}"></div>
+      </div>
+    </div>`).join('');
+  if (wfChart) { wfChart.destroy(); wfChart = null; }
+  const isDk = isDark;
+  const tc = isDk ? '#8b92a8' : '#5a6178';
+  const gc = isDk ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+  wfChart = new Chart(document.getElementById('wfChart'), {
+    type: 'bar',
+    data: {
+      labels: r.topWords.map(w => w[0]),
+      datasets: [{ data: r.topWords.map(w => w[1]), backgroundColor: ['#6ee7b7','#3b82f6','#a78bfa','#f87171','#fbbf24','#06b6d4'], borderRadius: 5 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: tc, font: { size: 11, family: "'DM Mono'" } }, grid: { color: gc } },
+        y: { ticks: { color: tc, font: { size: 11 } }, grid: { color: gc } }
+      }
+    }
+  });
+}
+
+/* -------- HISTORY -------- */
+function addHistory(text, r) {
+  if (!document.getElementById('autosave-toggle').checked) return;
+  history.unshift({ text: text.slice(0, 90), isAI: r.isAI, prob: r.aiScore, conf: r.conf, time: new Date().toLocaleTimeString() });
+  if (history.length > 30) history.pop();
+  renderHistory();
+}
+function renderHistory() {
+  const el = document.getElementById('history-list');
+  document.getElementById('hist-count').textContent = history.length + ' record' + (history.length !== 1 ? 's' : '');
+  if (!history.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div>No analyses yet. Head to Analyze to get started.</div>';
+    return;
+  }
+  el.innerHTML = history.map((h, i) => `
+    <div class="hist-item">
+      <span class="hist-num">#${i+1}</span>
+      <span class="hist-text">${h.text}…</span>
+      <span class="hist-badge ${h.isAI ? 'ai' : 'human'}">${h.isAI ? 'AI' : 'Human'}</span>
+      <span class="hist-prob">${h.prob}%</span>
+      <span class="hist-time">${h.time}</span>
+    </div>`).join('');
+}
+function clearHistory() {
+  history = [];
+  renderHistory();
+}
+function exportHistory() {
+  if (!history.length) { alert('No history to export.'); return; }
+  const blob = new Blob([JSON.stringify(history, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'ai-detector-history.json'; a.click();
+}
+
+/* -------- STATS -------- */
+function updateStats(r) {
+  stats.total++; if (r.isAI) stats.ai++; else stats.human++;
+  stats.confSum += r.conf;
+  confidenceHistory.push(r.conf);
+  const aiPct = Math.round(stats.ai / stats.total * 100);
+  const humanPct = 100 - aiPct;
+  const avgConf = Math.round(stats.confSum / stats.total);
+  document.getElementById('s-total').textContent = stats.total;
+  document.getElementById('s-ai').textContent = aiPct + '%';
+  document.getElementById('s-human').textContent = humanPct + '%';
+  document.getElementById('s-conf').textContent = avgConf + '%';
+  document.getElementById('session-count').textContent = stats.total;
+  rebuildCharts();
+}
+
+/* -------- CHARTS -------- */
+function rebuildCharts() {
+  const isDk = isDark;
+  const tc = isDk ? '#8b92a8' : '#5a6178';
+  const gc = isDk ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+  if (pieChart) { pieChart.destroy(); pieChart = null; }
+  const aiN = stats.total ? stats.ai : 1, humN = stats.total ? stats.human : 1;
+  const aiPct = stats.total ? Math.round(stats.ai/stats.total*100) : 50;
+  const humPct = 100 - aiPct;
+  pieChart = new Chart(document.getElementById('pieChart'), {
+    type: 'doughnut',
+    data: {
+      labels: [`AI ${aiPct}%`, `Human ${humPct}%`],
+      datasets: [{ data: [aiN, humN], backgroundColor: ['#f87171', '#34d399'], borderWidth: 0, hoverOffset: 6 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '68%',
+      plugins: { legend: { position: 'bottom', labels: { color: tc, font: { size: 11, family: "'DM Mono'" }, boxWidth: 10, padding: 12 } } }
+    }
+  });
+  if (lineChart) { lineChart.destroy(); lineChart = null; }
+  const lineData = confidenceHistory.length ? confidenceHistory : [0];
+  lineChart = new Chart(document.getElementById('lineChart'), {
+    type: 'line',
+    data: {
+      labels: lineData.map((_, i) => 'Run ' + (i + 1)),
+      datasets: [{
+        label: 'Confidence %', data: lineData,
+        borderColor: '#6ee7b7', backgroundColor: 'rgba(110,231,183,0.06)',
+        tension: 0.4, pointRadius: 5, pointBackgroundColor: '#6ee7b7',
+        pointBorderColor: isDk ? '#0a0b0f' : '#f4f5f9', pointBorderWidth: 2, fill: true
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: tc, font: { size: 10, family: "'DM Mono'" } }, grid: { color: gc } },
+        y: { min: 0, max: 100, ticks: { color: tc, font: { size: 10 } }, grid: { color: gc } }
+      }
+    }
+  });
+}
+
+/* -------- INIT -------- */
+rebuildCharts();
+loadPrefs();
+document.getElementById('dark-toggle').checked = isDark;
+</script>
+</body>
+</html>

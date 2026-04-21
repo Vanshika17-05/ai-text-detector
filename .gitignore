@@ -1,0 +1,23 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Node (if you ever add it later)
+node_modules/
+
+# Environment variables (important if you add backend later)
+.env
+
+# Python (future backend)
+__pycache__/
+*.pyc
+
+# VS Code settings (optional)
+.vscode/
+
+# Temporary files
+*.tmp
+*.swp

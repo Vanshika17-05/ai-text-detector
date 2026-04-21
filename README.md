@@ -27,7 +27,7 @@ An interactive web-based application that analyzes text and predicts whether it 
 
 ## 🌐 Live Demo
 
-👉 https://your-username.github.io/ai-text-detector/
+👉 https://vanshika17-05.github.io/ai-text-detector/
 
 ---
 
